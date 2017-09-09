@@ -68,9 +68,16 @@ public class GhostController : MonoBehaviour {
             }
         }
 
-        Vector2 dir = destination - (Vector2)transform.position;
-        animator.SetFloat ("Horizontal", dir.x);
-        animator.SetFloat ("Vertical", dir.y);
+        if (currentState != State.Running) {
+            Vector2 dir = destination - (Vector2)transform.position;
+            animator.SetFloat ("Horizontal", dir.x);
+            animator.SetFloat ("Vertical", dir.y);
+            animator.SetBool ("Scared", false);
+        } else {
+            animator.SetFloat ("Horizontal", 0);
+            animator.SetFloat ("Vertical", 0);
+            animator.SetBool ("Scared", true);
+        }
     }
 
     private void FollowUpdate () {
@@ -228,11 +235,11 @@ public class GhostController : MonoBehaviour {
     }
 
     public void Scare () {
-        print ("Ghost is scared!");
+        currentState = State.Running;
     }
 
     public void Calm () {
-        print ("Calm down ghost!");
+        currentState = State.Walking;
     }
 
     public void Reset () {

@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Pacdot
   - Ghost
+  - PowerUp
   layers:
   - Default
   - TransparentFX
