@@ -12,6 +12,8 @@ public class PlayerController : MonoBehaviour {
     }
 
     public static int killingSpree = 0;
+    private Vector2 userInput;
+    private Vector2 valid;
 
     public float speed = 0.4f;
     public Vector2 destination = Vector2.zero;
@@ -48,15 +50,26 @@ public class PlayerController : MonoBehaviour {
         Vector2 move = Vector2.MoveTowards (transform.position, destination, speed);
         rigidbody.MovePosition (move);
 
-        if (Vector2.Distance (destination, transform.position) < 0.00001f) {
-            if (Input.GetKey (KeyCode.UpArrow) && ValidDirection (Vector3.up))
-                destination = (Vector2)transform.position + Vector2.up;
-            if (Input.GetKey (KeyCode.DownArrow) && ValidDirection (Vector3.down))
-                destination = (Vector2)transform.position + Vector2.down;
-            if (Input.GetKey (KeyCode.LeftArrow) && ValidDirection (Vector3.left))
-                destination = (Vector2)transform.position + Vector2.left;
-            if (Input.GetKey (KeyCode.RightArrow) && ValidDirection (Vector3.right))
-                destination = (Vector2)transform.position + Vector2.right;
+        if (Input.GetKey (KeyCode.UpArrow))
+            userInput = Vector2.up;
+        if (Input.GetKey (KeyCode.DownArrow))
+            userInput = Vector2.down;
+        if (Input.GetKey (KeyCode.LeftArrow))
+            userInput = Vector2.left;
+        if (Input.GetKey (KeyCode.RightArrow))
+            userInput = Vector2.right;
+
+
+        if (Vector2.Distance (destination, transform.position) == 0.0f) {
+            if (ValidDirection (userInput)) {
+                valid = userInput;
+                destination = (Vector2)transform.position + userInput;
+            } else if (ValidDirection(valid)) {
+                destination = (Vector2)transform.position + valid;
+            } else {
+                destination = (Vector2)transform.position;
+                valid = Vector2.zero;
+            }
         }
 
         Vector2 direction = destination - (Vector2)transform.position;
@@ -84,6 +97,8 @@ public class PlayerController : MonoBehaviour {
     }
 
     private IEnumerator DieAndRestartScene () {
+        animator.SetFloat ("Horizontal", 0);
+        animator.SetFloat ("Vertical", 0);
         playingDead = true;
         alreadyDead = true;
         animator.SetTrigger ("Dead");
@@ -112,6 +127,8 @@ public class PlayerController : MonoBehaviour {
         if (killingSpree > 4)
             killingSpree = 4;
 
-        Debug.Log ("Player just killed a ghost and received: " + ((killingSpree - 1) * 200) + " points");
+        Debug.Log ("Player just killed a ghost and received: " + (killingSpree * 200) + " points");
+
+        GameManager.Score += ((killingSpree) * 200);
     }
 }

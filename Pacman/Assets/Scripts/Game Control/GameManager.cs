@@ -6,7 +6,7 @@ using UnityEngine;
 public class GameManager : MonoBehaviour {
     
     public enum GameState {
-        Init, Game, Dead
+        Init, Game, Dead, Win
     }
 
     public GameState gameState;
@@ -17,6 +17,12 @@ public class GameManager : MonoBehaviour {
     public static int Level = 0;
     //Are the Ghosts Scared?
     public static bool Scared = false;
+
+    public void Win () {
+        gameState = GameState.Win;
+        print ("You win! Score: " + Score);
+    }
+
     //Store Player's Score
     public static int Score = 0;
 
