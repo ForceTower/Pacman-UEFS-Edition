@@ -6,7 +6,7 @@ using UnityEngine;
 public class GameManager : MonoBehaviour {
     
     public enum GameState {
-        Init, Game, Dead, Win
+        Init, Game, Dead, Win, Lose
     }
 
     public GameState gameState;
@@ -18,13 +18,10 @@ public class GameManager : MonoBehaviour {
     //Are the Ghosts Scared?
     public static bool Scared = false;
 
-    public void Win () {
-        gameState = GameState.Win;
-        print ("You win! Score: " + Score);
-    }
-
     //Store Player's Score
     public static int Score = 0;
+
+    public static int HighScore = 0;
 
     //How long should the ghosts be scared?
     public float scareTime = 8;
@@ -105,6 +102,10 @@ public class GameManager : MonoBehaviour {
         print ("Player just got killed, lol");
         gameState = GameState.Dead;
         Lives--;
+
+        UIManager ui = FindObjectOfType<UIManager> ();
+        Destroy (ui.lives[ui.lives.Count - 1]);
+        ui.lives.RemoveAt (ui.lives.Count - 1);
     }
 
     public void RestartLevel () {
@@ -125,7 +126,20 @@ public class GameManager : MonoBehaviour {
         PlayerController.killingSpree = 0;
     }
 
-    private void GameOver () {
+    public void Win () {
+        gameState = GameState.Win;
+        if (HighScore < Score)
+            HighScore = Score;
+
+        print ("You win! Score: " + Score);
+        UIManager ui = FindObjectOfType<UIManager> ();
+        ui.ShowYouWinScreen ();
+    }
+
+    public void GameOver () {
+        gameState = GameState.Lose;
         print ("Game over");
+        UIManager ui = FindObjectOfType<UIManager> ();
+        ui.ShowGameOverScreen ();
     }
 }

@@ -106,7 +106,7 @@ public class PlayerController : MonoBehaviour {
         playingDead = false;
 
         if (GameManager.Lives <= 0) {
-            print ("Show some screen! Game is Over");
+            GameManager.Instance.GameOver ();
         } else {
             GameManager.Instance.RestartLevel ();
         }
