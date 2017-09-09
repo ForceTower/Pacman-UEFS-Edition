@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class GhostController : MonoBehaviour {
     public enum State {
-        Walking, Following, Running
+        Walking, Following, Running, Waiting
     }
 
     public float speed;
@@ -22,30 +22,47 @@ public class GhostController : MonoBehaviour {
     public LayerMask mazeLayer;
 
     public Vector2 diff;
+    private Vector2 startLocation;
+
+    private List<Vector2> ways;
 
     // Use this for initialization
     void Start () {
         destination = transform.position;
         rigidbody = GetComponent<Rigidbody2D> ();
         animator = GetComponent<Animator> ();
+        startLocation = transform.position;
         SelectNextDirection ();
-    }
-	
-    // Update is called once per frame
-    void Update () {
-		
     }
 
     private void FixedUpdate () {
+        switch(GameManager.Instance.gameState) {
+            case GameManager.GameState.Game:
+                MoveGhost ();
+                break;
+        }
+    }
+
+    private void MoveGhost() {
         Vector2 move = Vector2.MoveTowards (transform.position, destination, speed);
         rigidbody.MovePosition (move);
 
-        if (Vector2.Distance(transform.position, destination) == 0.0f) {
+        if (Vector2.Distance (transform.position, destination) == 0.0f) {
             FollowUpdate ();
 
-            if (ValidDirection(direction)) {
+            Vector2 pDirection = direction;
+
+            if (SelectNextDirection()) {
                 destination = (Vector2)transform.position + direction;
+                return;
             } else {
+                direction = pDirection;
+            }
+
+            if (ValidDirection (direction)) {
+                destination = (Vector2)transform.position + direction;
+            }
+            else {
                 SelectNextDirection ();
                 destination = (Vector2)transform.position + direction;
             }
@@ -70,7 +87,7 @@ public class GhostController : MonoBehaviour {
         }
     }
 
-    private void SelectNextDirection() {
+    private bool SelectNextDirection() {
         List<Vector2> avaliableDirections = CheckDirections ();
 
         if (currentState == State.Walking) {
@@ -78,7 +95,28 @@ public class GhostController : MonoBehaviour {
             direction = avaliableDirections[selected];
         } else if (currentState == State.Following) {
             FollowLogic (avaliableDirections);
+        } else if (currentState == State.Running) {
+            FollowLogic (avaliableDirections);
+            if (avaliableDirections.Contains (direction * -1))
+                direction = direction * -1;
+            else if (avaliableDirections.Count != 1) {
+                avaliableDirections.Remove (direction);
+                direction = avaliableDirections[0];
+            }
+
         }
+
+        if (ways != null) {
+            foreach (Vector2 v2 in avaliableDirections) {
+                if (!ways.Contains (v2)) {
+                    ways = avaliableDirections;
+                    return true;
+                }
+            }
+        }
+        ways = avaliableDirections;
+
+        return false;
     }
 
     private void FollowLogic (List<Vector2> avaliableDirections) {
@@ -169,5 +207,40 @@ public class GhostController : MonoBehaviour {
         else {
             return true;
         }
+    }
+
+    private void OnTriggerEnter2D (Collider2D collision) {
+        if (collision.tag == "Player" && GameManager.Instance.gameState == GameManager.GameState.Game) {
+            if (currentState == State.Running) {
+                PlayerController.Instance.UpdateScore ();
+                GhostKilled ();
+            }
+            else {
+                GameManager.Instance.KillPlayer ();
+            }
+        }
+    }
+
+    private void GhostKilled () {
+        print ("A ghost was killed, now it should chill");
+        Calm ();
+        Reset ();
+    }
+
+    public void Scare () {
+        print ("Ghost is scared!");
+    }
+
+    public void Calm () {
+        print ("Calm down ghost!");
+    }
+
+    public void Reset () {
+        currentState = State.Waiting;
+
+        transform.position = startLocation;
+        destination = transform.position;
+        animator.SetFloat ("Horizontal", 1);
+        animator.SetFloat ("Vertical", 0);
     }
 }

@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 2
   tags:
   - Pacdot
+  - Ghost
   layers:
   - Default
   - TransparentFX
