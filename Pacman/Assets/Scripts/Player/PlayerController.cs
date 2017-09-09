@@ -3,10 +3,22 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
+    private static PlayerController _instance;
+
+    public static PlayerController Instance {
+        get {
+            return _instance;
+        }
+    }
+
     public float speed = 0.4f;
     public Vector2 destination = Vector2.zero;
     private new Rigidbody2D rigidbody;
     private Animator animator;
+
+    private void Awake () {
+        _instance = this;
+    }
 
     void Start () {
         rigidbody = GetComponent<Rigidbody2D> ();
